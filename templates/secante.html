@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultados - Secante</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container">
+  <h1 class="mt-4">Resultados del Método de la Secante</h1>
+  <h3>Función: f(x) = {{ funcion }}</h3>
+  <img src="{{ url_for('static', filename='secante.png') }}" alt="Gráfica de Secante" class="img-fluid my-4">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Iteración</th>
+        <th>xi</th>
+        <th>Error (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in resultados %}
+      <tr>
+        <td>{{ fila.iteracion }}</td>
+        <td>{{ fila.xi }}</td>
+        <td>{{ fila.error }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p>Analice la gráfica y los resultados para obtener las conclusiones pertinentes.</p>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver al menú principal</a>
+</body>
+</html>

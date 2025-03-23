@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Proyecto de Métodos Numéricos</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body { background-color: #f8f9fa; }
+    .navbar-brand { font-weight: bold; }
+    .jumbotron {
+      background-color: #fff;
+      padding: 2rem 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .list-group-item a {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #007bff;
+      text-decoration: none;
+    }
+    .list-group-item:hover {
+      background-color: #f8f8f8;
+    }
+  </style>
+</head>
+<body>
+  <!-- Barra de Navegación -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{{ url_for('index') }}">Métodos Numéricos</a>
+  </nav>
+
+  <div class="container my-5">
+    <div class="jumbotron text-center">
+      <h1 class="display-4">Proyecto de Métodos Numéricos</h1>
+      <p class="lead">Seleccione uno de los métodos o utilice la calculadora científica.</p>
+    </div>
+    <div class="row">
+      <div class="col-md-6 offset-md-3">
+        <ul class="list-group text-center">
+          <li class="list-group-item">
+            <a href="{{ url_for('metodo_biseccion') }}">Método de la Bisección</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{{ url_for('metodo_falsa_posicion') }}">Método de la Falsa Posición</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{{ url_for('metodo_fixed_point') }}">Método del Punto Fijo</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{{ url_for('metodo_newton_raphson') }}">Método de Newton-Raphson</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{{ url_for('metodo_secante') }}">Método de la Secante</a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
