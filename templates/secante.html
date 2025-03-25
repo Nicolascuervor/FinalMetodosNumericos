@@ -2,32 +2,118 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Resultados - Secante</title>
+  <title>Resultados - Método de la Secante</title>
+  <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Plotly JS para la gráfica interactiva -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .navbar-brand {
+      font-weight: bold;
+    }
+    footer {
+      background-color: #e9ecef;
+      padding: 1rem;
+      text-align: center;
+      margin-top: 2rem;
+      border-top: 1px solid #ccc;
+    }
+    .card {
+      border: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #plot-secante {
+      width: 100%;
+      height: 500px;
+    }
+  </style>
 </head>
-<body class="container">
-  <h1 class="mt-4">Resultados del Método de la Secante</h1>
-  <h3>Función: f(x) = {{ funcion }}</h3>
-  <img src="{{ url_for('static', filename='secante.png') }}" alt="Gráfica de Secante" class="img-fluid my-4">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Iteración</th>
-        <th>xi</th>
-        <th>Error (%)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for fila in resultados %}
-      <tr>
-        <td>{{ fila.iteracion }}</td>
-        <td>{{ fila.xi }}</td>
-        <td>{{ fila.error }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <p>Analice la gráfica y los resultados para obtener las conclusiones pertinentes.</p>
-  <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver al menú principal</a>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{{ url_for('index') }}">Inicio</a>
+  </nav>
+
+  <div class="container my-4">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="mb-4">Resultados del Método de la Secante</h1>
+        <h5><strong>Función:</strong> f(x) = {{ funcion }}</h5>
+        <div id="plot-secante"></div>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header">Tabla de Iteraciones</div>
+      <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Iteración</th>
+              <th>x0</th>
+              <th>x1</th>
+              <th>xi</th>
+              <th>f(xi)</th>
+              <th>Error (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fila in resultados %}
+            <tr>
+              <td>{{ fila.iteracion }}</td>
+              <td>{{ fila.x0 }}</td>
+              <td>{{ fila.x1 }}</td>
+              <td>{{ fila.xi }}</td>
+              <td>{{ fila['f(xi)'] }}</td>
+              <td>{{ fila.error }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary mt-4">Volver al menú principal</a>
+  </div>
+
+  <footer>
+    <small>Desarrollado Nicolas Cuervo y Xiomara Ocampo &copy; 2025</small>
+  </footer>
+
+  <script>
+    var xVals = {{ plot_data.x_vals|safe }};
+    var yVals = {{ plot_data.y_vals|safe }};
+    var xFinal = {{ plot_data.x_final }};
+    var yFinal = {{ plot_data.y_final }};
+
+    var traceFunc = {
+      x: xVals,
+      y: yVals,
+      mode: 'lines',
+      name: 'f(x)',
+      line: { color: '#007bff', width: 2 }
+    };
+    var traceRoot = {
+      x: [xFinal],
+      y: [yFinal],
+      mode: 'markers',
+      marker: { color: 'red', size: 8 },
+      name: 'Raíz Aproximada'
+    };
+
+    var layout = {
+      title: 'Método de la Secante',
+      xaxis: { title: 'x' },
+      yaxis: { title: 'f(x)' },
+      showlegend: true
+    };
+
+    Plotly.newPlot('plot-secante', [traceFunc, traceRoot], layout);
+  </script>
+
 </body>
 </html>

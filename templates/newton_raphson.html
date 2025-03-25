@@ -2,32 +2,159 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Resultados - Newton-Raphson</title>
+  <title>Resultados - Método de la Bisección</title>
+  <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Plotly JS para la gráfica interactiva -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <style>
+    /* Estilos opcionales propios */
+    body {
+      background-color: #f8f9fa; /* color claro de fondo */
+    }
+    .navbar-brand {
+      font-weight: bold;
+    }
+    footer {
+      background-color: #e9ecef;
+      padding: 1rem;
+      text-align: center;
+      margin-top: 2rem;
+      border-top: 1px solid #ccc;
+    }
+    footer small {
+      color: #666;
+    }
+    .card {
+      border: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    /* Ajustes para el contenedor de la gráfica */
+    #plot-biseccion {
+      width: 100%;
+      height: 500px;
+    }
+  </style>
 </head>
-<body class="container">
-  <h1 class="mt-4">Resultados del Método de Newton-Raphson</h1>
-  <h3>Función: f(x) = {{ funcion }}</h3>
-  <img src="{{ url_for('static', filename='newton_raphson.png') }}" alt="Gráfica de Newton-Raphson" class="img-fluid my-4">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Iteración</th>
-        <th>xi</th>
-        <th>Error (%)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for fila in resultados %}
-      <tr>
-        <td>{{ fila.iteracion }}</td>
-        <td>{{ fila.xi }}</td>
-        <td>{{ fila.error }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <p>Analice la gráfica y los resultados para obtener las conclusiones pertinentes.</p>
-  <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver al menú principal</a>
+<body>
+
+
+  <!-- Barra de Navegación -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{{ url_for('index') }}">Inicio</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Opcional: enlaces a otras secciones -->
+      <ul class="navbar-nav ml-auto">
+        <!-- <li class="nav-item"><a class="nav-link" href="#">Otras Secciones</a></li> -->
+      </ul>
+    </div>
+  </nav>
+
+
+<!-- Contenido Principal -->
+  <div class="container my-4">
+    <!-- Tarjeta Principal con la Información -->
+    <div class="card">
+      <div class="card-body">
+        <h1 class="mb-4">Resultados del Método de Newton Raphson</h1>
+        <h5 class="mb-3">
+          <strong>Función:</strong> f(x) = {{ funcion }}
+        </h5>
+        <!-- Contenedor para la gráfica Plotly -->
+        <div id="plot-newton"></div>
+
+      </div>
+    </div>
+
+    <!-- Tarjeta para la Tabla de Iteraciones -->
+    <div class="card mt-4">
+      <div class="card-header">
+        Tabla de Iteraciones
+      </div>
+      <div class="card-body p-0">
+
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Iteración</th>
+              <th>Xi</th>
+              <th>Error (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fila in resultados %}
+            <tr>
+              <td>{{ fila.iteracion }}</td>
+              <td>{{ fila.xi }}</td>
+              <td>{{ fila.error }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+
+   <a href="{{ url_for('index') }}" class="btn btn-secondary mt-4">Volver al menú principal</a>
+  </div>
+
+  <!-- Pie de página -->
+  <footer>
+    <small>Desarrollado por Nicolas Cuervo y Xiomara Ocampo &copy; 2025</small>
+  </footer>
+
+  <!-- Script para generar la gráfica con Plotly -->
+  <script>
+    // Datos pasados desde Flask a la plantilla
+    var xVals = {{ plot_data.x_vals|safe }};
+    var yVals = {{ plot_data.y_vals|safe }};
+    var xr = {{ plot_data.x_final }};
+    var yXr = {{ plot_data.y_final }};
+
+    // Trazas para la gráfica
+    var traceFunc = {
+      x: xVals,
+      y: yVals,
+      mode: 'lines',
+      name: 'f(x)',
+      line: { color: '#007bff', width: 2 }
+    };
+    var traceRoot = {
+      x: [xr],
+      y: [yXr],
+      mode: 'markers',
+      marker: { color: 'red', size: 8 },
+      name: 'Raíz Aproximada'
+    };
+
+    // Eje X = 0 (opcional, para dibujar la línea horizontal)
+    // var xAxisLine = {
+    //   x: xVals,
+    //   y: Array(xVals.length).fill(0),
+    //   mode: 'lines',
+    //   line: { color: 'black', dash: 'dot' },
+    //   name: 'Eje X'
+    // };
+
+    var layout = {
+      title: 'Método de Newton Raphson',
+      xaxis: { title: 'x' },
+      yaxis: { title: 'f(x)' },
+      showlegend: true
+    };
+
+    Plotly.newPlot('plot-newton', [traceFunc, traceRoot], layout);
+  </script>
+
+  <!-- Scripts de Bootstrap (Opcional para menú colapsable) -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
