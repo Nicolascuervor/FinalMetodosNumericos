@@ -1,15 +1,28 @@
 import numpy as np
 import sympy as sp
+import matplotlib.pyplot as plt
+import os
 
 def parse_function(func_str):
     """
     Convierte la cadena en una función evaluable (f) con sympy,
     devuelve también la expresión simbólica y la variable x.
     """
-    x = sp.symbols('x', real=True)
-    expr = sp.sympify(func_str)
-    f = sp.lambdify(x, expr, 'numpy')
-    return f, expr, x
+    x = sp.Symbol('x')
+
+    # Reemplazar cualquier referencia a math con sympy
+    func_str = func_str.replace('math.', '')
+
+    try:
+        # Convertir la cadena a expresión simbólica
+        expr = sp.sympify(func_str, locals={'x': x, 'exp': sp.exp})
+
+        # Crear función lambda
+        f = sp.lambdify(x, expr, {'exp': np.exp, 'numpy': np})
+
+        return f, expr, x
+    except Exception as e:
+        raise ValueError(f"Error al parsear la función: {e}")
 
 # -------------------------
 # Métodos Numéricos
@@ -191,60 +204,113 @@ def fixed_point_plot_data(func_str, g_str, x0, results):
         "yxf": yxf
     }
 
-def newton_raphson(func_str, x0, tol=0.1, max_iter=50, mode='error'):
-    f, expr, x = parse_function(func_str)
-    deriv_expr = sp.diff(expr, x)
-    f_deriv = sp.lambdify(x, deriv_expr, 'numpy')
-    results = []
-    iteracion = 0
-    xi = x0
-    error = 100.0
 
-    while (mode=='error' and error > tol) or (mode=='iteraciones' and iteracion < max_iter):
+def newton_raphson(func_str, x0, tol=0.1, max_iter=50, mode='error'):
+    # Parsear la función
+    f, expr, x = parse_function(func_str)
+
+    # Calcular la derivada simbólicamente
+    try:
+        deriv_expr = sp.diff(expr, x)
+        print("Derivada simbólica:", deriv_expr)  # Imprimir la derivada simbólica
+
+        # Crear función de derivada
+        df_x = sp.lambdify(x, deriv_expr, {'exp': np.exp, 'numpy': np})
+    except Exception as e:
+        raise ValueError(f"Error al calcular la derivada: {e}")
+
+    # Inicializar variables
+    results = []
+    xi = x0
+    iteracion = 0
+    error = 100.0  # Iniciar con 100% de error
+
+    while (mode == 'error' and error > tol) or (mode == 'iteraciones' and iteracion < max_iter):
+        # Calcular valores de la función y su derivada
         f_xi = f(xi)
-        f_deriv_xi = f_deriv(xi)
-        if f_deriv_xi == 0:
-            raise ZeroDivisionError("La derivada se hizo 0. Considera el método de la secante.")
-        xi_new = xi - f_xi/f_deriv_xi
+        f_deriv_xi = df_x(xi)
+
+        print(f"Iteración {iteracion}:")
+        print(f"xi = {xi}")
+        print(f"f(xi) = {f_xi}")
+        print(f"f'(xi) = {f_deriv_xi}")
+
+        # Verificar si la derivada es cero para evitar división por cero
+        if abs(f_deriv_xi) < 1e-10:
+            print("Derivada muy cercana a cero")
+            break
+
+        # Calcular nuevo punto
+        xi_new = xi - (f_xi / f_deriv_xi)
+
+        # Calcular error
         if iteracion > 0:
-            error = abs((xi_new - xi)/xi_new)*100
+            error = abs((xi_new - xi) / xi_new) * 100
         else:
             error = 100.0
 
+        # Almacenar resultados
         results.append({
             'iteracion': iteracion,
             'xi': xi_new,
+            'f(xi)': f_xi,
+            'f_deriv_xi': f_deriv_xi,
             'error': error
         })
 
+        print(f"Error = {error}%")
+        print("-" * 30)
+
+        # Actualizar para próxima iteración
         xi = xi_new
         iteracion += 1
-        if iteracion >= max_iter and mode=='error':
+
+        # Condición de parada adicional
+        if iteracion >= max_iter and mode == 'error':
             break
 
     return results
 
 def newton_raphson_plot_data(func_str, x0, results):
+    """
+    Genera datos para graficar el método de Newton-Raphson.
+    """
     f, expr, x = parse_function(func_str)
     deriv_expr = sp.diff(expr, x)
     f_deriv = sp.lambdify(x, deriv_expr, 'numpy')
 
-    # Tomar el último xi
-    x_final = results[-1]['xi']
+    # Manejar diferentes estructuras de resultados
+    try:
+        # Primero intentar con 'x'
+        x_final = results[-1]['x']
+    except (KeyError, TypeError):
+        try:
+            # Si falla, intentar con 'xi'
+            x_final = results[-1]['xi']
+        except (KeyError, TypeError):
+            # Si ambos fallan, usar el punto inicial
+            x_final = x0
+
+    # Calcular valor de la función en el punto final
     y_final = f(x_final)
 
-    min_x = min(x0, x_final) - 5
-    max_x = max(x0, x_final) + 5
+    # Rango de x para graficar
+    min_x = min(x0, x_final) - abs(x_final) * 0.5
+    max_x = max(x0, x_final) + abs(x_final) * 0.5
     x_vals = np.linspace(min_x, max_x, 300)
     y_vals = f(x_vals)
 
-    # Si quieres graficar las tangentes en cada iteración,
-    # podrías generar puntos extra. Para simplificar, solo dibujamos f(x) y el último punto.
+    img_path = os.path.join("static", "newton_raphson.png")
+
+    x_final = results[-1]['xi'] if results else x0
+
     return {
         "x_vals": x_vals.tolist(),
         "y_vals": y_vals.tolist(),
         "x_final": x_final,
-        "y_final": y_final
+        "y_final": y_final,
+        "xr": x_final,  # Para que coincida con la plantilla
+        "y_xr": y_final  # Para que coincida con la plantilla
     }
 
 def secante(func_str, x0, x1, tol=0.1, max_iter=50, mode='error'):
@@ -295,6 +361,8 @@ def secante_plot_data(func_str, x0, x1, results):
         "x_final": x_final,
         "y_final": y_final
     }
+
+
 
 # -------------------------
 # Calculadora

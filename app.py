@@ -111,26 +111,24 @@ def metodo_newton_raphson():
 
         try:
             if modo == 'iteraciones':
-                results = newton_raphson(func_str, x0, tol=1e-6, max_iter=int(valor),
-                                         mode='iteraciones')
+                results = newton_raphson(func_str, x0, tol=1e-6, max_iter=int(valor), mode='iteraciones')
             else:
-                results = newton_raphson(func_str, x0, tol=valor, max_iter=50,
-                                         mode='error')
-        except ZeroDivisionError as e:
-            flash(str(e))
-            return redirect(url_for('metodo_secante'))
+                results = newton_raphson(func_str, x0, tol=valor, max_iter=50, mode='error')
 
-        plot_data = newton_raphson_plot_data(func_str, x0, results)
+            plot_data = newton_raphson_plot_data(func_str, x0, results)
 
-        return render_template('newton_raphson.html',
-                               resultados=results,
-                               funcion=func_str,
-                               plot_data=plot_data)
+            return render_template('newton_raphson.html',
+                                   resultados=results,
+                                   funcion=func_str,
+                                   plot_data=plot_data)
+        except Exception as e:
+            flash(f"Error: {str(e)}")
+            return redirect(url_for('metodo_newton_raphson'))
+
     return render_template('newton_raphson_form.html')
 
-# -------------------------
-# Secante
-# -------------------------
+
+
 @app.route('/secante', methods=['GET', 'POST'])
 def metodo_secante():
     if request.method == 'POST':
@@ -160,19 +158,6 @@ def metodo_secante():
                                plot_data=plot_data)
     return render_template('secante_form.html')
 
-# -------------------------
-# Calculadora
-# -------------------------
-@app.route('/calculator', methods=['GET', 'POST'])
-def calculator():
-    result = None
-    if request.method == 'POST':
-        expr_str = request.form['expression']
-        try:
-            result = evaluate_expression(expr_str)
-        except Exception as e:
-            flash(f"Error al evaluar la expresión: {e}")
-    return render_template('calculator.html', result=result)
 
 
 if __name__ == '__main__':
